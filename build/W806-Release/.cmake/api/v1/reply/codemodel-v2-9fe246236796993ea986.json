@@ -1,0 +1,246 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.9"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "libs/EFIGenie",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "libs/EFIGenie",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "libs/EFIGenie/libs/OperationArchitecture",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 2,
+					"source" : "libs/EFIGenie/libs/OperationArchitecture",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "libs/EFIGenie/libs/EmbeddedIOServices",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 3,
+					"source" : "libs/EFIGenie/libs/EmbeddedIOServices",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "libs/EFIGenie/libs/EmbeddedIOOperations",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 4,
+					"source" : "libs/EFIGenie/libs/EmbeddedIOOperations",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "libs/EFIGenie/libs/ReluctorOperations",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 5,
+					"source" : "libs/EFIGenie/libs/ReluctorOperations",
+					"targetIndexes" : 
+					[
+						4
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "EFIGenieW806",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5
+					],
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "EFIGenie",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2
+					],
+					"name" : "OperationArchitecture",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						3
+					],
+					"name" : "EmbeddedIOServices",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						4
+					],
+					"name" : "EmbeddedIOOperations",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						5
+					],
+					"name" : "ReluctorOperations",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "EFIGenie::@e4a90a7a627d640b232b",
+					"jsonFile" : "target-EFIGenie-b8beb3792f0d80a4599e.json",
+					"name" : "EFIGenie",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "EmbeddedIOOperations::@af9989573326823e33ed",
+					"jsonFile" : "target-EmbeddedIOOperations-6b380ebbbf69fb5179be.json",
+					"name" : "EmbeddedIOOperations",
+					"projectIndex" : 4
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "EmbeddedIOServices::@1e7f1d81e677f1727db8",
+					"jsonFile" : "target-EmbeddedIOServices-8f888bb16566c49244fa.json",
+					"name" : "EmbeddedIOServices",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "OperationArchitecture::@c434d36d2d71d9496f71",
+					"jsonFile" : "target-OperationArchitecture-3cce33ea55fff1b9712c.json",
+					"name" : "OperationArchitecture",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "ReluctorOperations::@94f72a9956227497a2a6",
+					"jsonFile" : "target-ReluctorOperations-a64782cc88f1a2ff79b6.json",
+					"name" : "ReluctorOperations",
+					"projectIndex" : 5
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "firmware.elf::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-firmware.elf-344c8fb4bfdd85808b55.json",
+					"name" : "firmware.elf",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/daniel/git/EFIGenieW806/build/W806-Release",
+		"source" : "/home/daniel/git/EFIGenieW806"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}
