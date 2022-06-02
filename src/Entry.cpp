@@ -106,7 +106,8 @@ extern "C"
         _uartService->Flush();
         
         const void *metadata = nullconf;
-        _getVariableHandler = new CommunicationHandler_GetVariable(_uartService, _engineMain->VariableMap, metadata);
+        _getVariableHandler = new CommunicationHandler_GetVariable(_engineMain->VariableMap, metadata);
+        _uartService->RegisterHandler(_getVariableHandler);
         
         const char responseText5[24] = "Setting Up EngineMain";
         _uartService->Send((uint8_t*)responseText5, strlen(responseText5));
