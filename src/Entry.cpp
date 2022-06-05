@@ -11,6 +11,7 @@
 #include "Variable.h"
 #include "Config.h"
 #include "wm_internal_flash.h"
+#include "CRC.h"
 
 using namespace EFIGenie;
 using namespace EmbeddedIOServices;
@@ -44,7 +45,7 @@ extern "C"
         _uartService = CommunicationService_W806UART::Create(0, 1024, 1024, 115200, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
         _uartService->RegisterHandler(_prefixHandler = new CommunicationHandler_Prefix());
 
-        const char responseText1[42] = "Initializing EmbeddedIOServices blah blah";
+        const char responseText1[32] = "Initializing EmbeddedIOServices";
         _uartService->Send(responseText1, strlen(responseText1));
         _embeddedIOServiceCollection.DigitalService = new DigitalService_W806();
         _embeddedIOServiceCollection.AnalogService = new AnalogService_W806();
@@ -92,11 +93,16 @@ extern "C"
         while(ledTask->Scheduled);
         _embeddedIOServiceCollection.TimerService->ScheduleTask(ledPWMTask, ledTask->ExecutedTick+ledPWMInterval);
 
+        const uint32_t configSize2 = *reinterpret_cast<const uint32_t *>(&_config) + sizeof(uint32_t);
+        const uint32_t configCRC = CRC::CRC32(&_config, configSize2);
+        printf("Size:%d\tCRC:%d\n\r", configSize2, configCRC);
+
 		size_t configSize = 0;
         const char responseText3[24] = "Initializing EngineMain";
         _uartService->Send((uint8_t*)responseText3, strlen(responseText3));
         _engineMain = new EFIGenieMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
         _metadata = Config::OffsetConfig(&_config, configSize);
+        _metadata = Config::OffsetConfig(&_metadata, sizeof(uint32_t));//size
         _uartService->Send((uint8_t*)doneResponseText, strlen(doneResponseText));
         
         _getVariableHandler = new CommunicationHandler_GetVariable(_variableMap);
@@ -166,6 +172,7 @@ extern "C"
                 send((uint8_t*)responseText1, strlen(responseText1));
                 _engineMain = new EFIGenieMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
                 _metadata = Config::OffsetConfig(&_config, configSize);
+                _metadata = Config::OffsetConfig(&_metadata, sizeof(uint32_t));//size
                 send((uint8_t*)doneResponseText, strlen(doneResponseText));
 
                 const char responseText2[22] = "Setting Up EngineMain";
@@ -219,4 +226,22 @@ extern "C"
         if(_engineMain != 0)
             _engineMain->Loop();
     }
+}
+
+__attribute__((isr)) void Default_Handler(void)
+{
+    printf("\n\r\n\r***ERROR***\n\r");
+    while(true);
+}
+
+void Error_Handler(void)
+{
+    printf("\n\r\n\r***ERROR***\n\r");
+    while(true);
+}
+
+void assert_failed(uint8_t *file, uint32_t line)
+{
+    printf("\n\r\n\r***ERROR***\n\r");
+    while(true);
 }
