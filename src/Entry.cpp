@@ -93,10 +93,6 @@ extern "C"
         while(ledTask->Scheduled);
         _embeddedIOServiceCollection.TimerService->ScheduleTask(ledPWMTask, ledTask->ExecutedTick+ledPWMInterval);
 
-        const uint32_t configSize2 = *reinterpret_cast<const uint32_t *>(&_config) + sizeof(uint32_t);
-        const uint32_t configCRC = CRC::CRC32(&_config, configSize2);
-        printf("Size:%d\tCRC:%d\n\r", configSize2, configCRC);
-
 		size_t configSize = 0;
         const char responseText3[24] = "Initializing EngineMain";
         _uartService->Send((uint8_t*)responseText3, strlen(responseText3));
@@ -226,22 +222,4 @@ extern "C"
         if(_engineMain != 0)
             _engineMain->Loop();
     }
-}
-
-__attribute__((isr)) void Default_Handler(void)
-{
-    printf("\n\r\n\r***ERROR***\n\r");
-    while(true);
-}
-
-void Error_Handler(void)
-{
-    printf("\n\r\n\r***ERROR***\n\r");
-    while(true);
-}
-
-void assert_failed(uint8_t *file, uint32_t line)
-{
-    printf("\n\r\n\r***ERROR***\n\r");
-    while(true);
 }

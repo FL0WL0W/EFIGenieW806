@@ -22,3 +22,21 @@ int main(void)
         Loop();
     }
 }
+
+// __attribute__((isr)) void Default_Handler(void)
+// {
+//     printf("\n\r\n\r***ERROR***\n\r");
+//     while(1);
+// }
+
+// void Error_Handler(void)
+// {
+//     printf("\n\r\n\r***ERROR***\n\r");
+//     while(1);
+// }
+
+// void assert_failed(uint8_t *file, uint32_t line)
+// {
+//     printf("\n\r\n\r***ERROR***\n\r");
+//     while(1);
+// }
