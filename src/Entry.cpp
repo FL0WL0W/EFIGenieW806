@@ -48,6 +48,10 @@ extern "C"
         const char responseText1[32] = "Initializing EmbeddedIOServices";
         _uartService->Send(responseText1, strlen(responseText1));
         _embeddedIOServiceCollection.DigitalService = new DigitalService_W806();
+        _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
+        _embeddedIOServiceCollection.DigitalService->AttachInterrupt(0, [](){
+            _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
+        });
         _embeddedIOServiceCollection.AnalogService = new AnalogService_W806();
         _embeddedIOServiceCollection.TimerService = new TimerService_W806(0,1);
         _embeddedIOServiceCollection.PwmService = new PwmService_W806();
@@ -56,10 +60,6 @@ extern "C"
         _embeddedIOServiceCollection.PwmService->InitPin(32, Out, 1000);
         _embeddedIOServiceCollection.DigitalService->InitPin(33, Out);
         _embeddedIOServiceCollection.DigitalService->InitPin(34, Out);
-        _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
-        _embeddedIOServiceCollection.DigitalService->AttachInterrupt(0, [](){
-            _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
-        });
         ledInterval = _embeddedIOServiceCollection.TimerService->GetTicksPerSecond();
         ledPWMInterval = 20001;
         ledTask = new Task([](){

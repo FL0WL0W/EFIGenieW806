@@ -45,6 +45,7 @@ SECTIONS
   . = ALIGN(0x4) ;
   KEEP(*startup.o(.vectors))
   __stext = . ;
+  *startup.o(.text*)
   *(.text)
   *(.text*)
   *(.text.*)
@@ -100,6 +101,7 @@ SECTIONS
   __sdata = . ;
   __data_start__ = . ;
   data_start = . ;
+  *(.interrupt)
   *(.got.plt)
   *(.got)
   *(.gnu.linkonce.r*)
