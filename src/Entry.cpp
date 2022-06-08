@@ -44,12 +44,12 @@ extern "C"
         const char responseText1[32] = "Initializing EmbeddedIOServices";
         _uartService->Send(responseText1, strlen(responseText1));
         _embeddedIOServiceCollection.DigitalService = new DigitalService_W806();
-        _embeddedIOServiceCollection.DigitalService->InitPin(0, In);
-        _embeddedIOServiceCollection.DigitalService->InitPin(34, Out);
-        _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
-        _embeddedIOServiceCollection.DigitalService->AttachInterrupt(0, [](){
-            _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
-        });
+        // _embeddedIOServiceCollection.DigitalService->InitPin(0, In);
+        // _embeddedIOServiceCollection.DigitalService->InitPin(34, Out);
+        // _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
+        // _embeddedIOServiceCollection.DigitalService->AttachInterrupt(0, [](){
+        //     _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
+        // });
         _embeddedIOServiceCollection.AnalogService = new AnalogService_W806();
         _embeddedIOServiceCollection.TimerService = new TimerService_W806(1,0);
         _embeddedIOServiceCollection.PwmService = new PwmService_W806();
@@ -60,7 +60,6 @@ extern "C"
         _uartService->Send((uint8_t*)responseText3, strlen(responseText3));
         _engineMain = new EFIGenieMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
         _metadata = Config::OffsetConfig(&_config, configSize);
-        _metadata = Config::OffsetConfig(&_metadata, sizeof(uint32_t));//size
         _uartService->Send((uint8_t*)doneResponseText, strlen(doneResponseText));
         
         _getVariableHandler = new CommunicationHandler_GetVariable(_variableMap);
@@ -130,7 +129,6 @@ extern "C"
                 send((uint8_t*)responseText1, strlen(responseText1));
                 _engineMain = new EFIGenieMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
                 _metadata = Config::OffsetConfig(&_config, configSize);
-                _metadata = Config::OffsetConfig(&_metadata, sizeof(uint32_t));//size
                 send((uint8_t*)doneResponseText, strlen(doneResponseText));
 
                 const char responseText2[22] = "Setting Up EngineMain";
