@@ -29,10 +29,6 @@ extern "C"
     CommunicationHandler_GetVariable *_getVariableHandler;
     GeneratorMap<Variable> *_variableMap;
     tick_t prev;
-    Task *ledTask;
-    Task *ledPWMTask;
-    tick_t ledInterval;
-    tick_t ledPWMInterval;
     Variable *loopTime;
     const char doneResponseText[10] = " (Done)\n\r";
     const void *_metadata;
@@ -48,50 +44,16 @@ extern "C"
         const char responseText1[32] = "Initializing EmbeddedIOServices";
         _uartService->Send(responseText1, strlen(responseText1));
         _embeddedIOServiceCollection.DigitalService = new DigitalService_W806();
+        _embeddedIOServiceCollection.DigitalService->InitPin(0, In);
+        _embeddedIOServiceCollection.DigitalService->InitPin(34, Out);
         _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
         _embeddedIOServiceCollection.DigitalService->AttachInterrupt(0, [](){
             _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
         });
         _embeddedIOServiceCollection.AnalogService = new AnalogService_W806();
-        _embeddedIOServiceCollection.TimerService = new TimerService_W806(0,1);
+        _embeddedIOServiceCollection.TimerService = new TimerService_W806(1,0);
         _embeddedIOServiceCollection.PwmService = new PwmService_W806();
         _uartService->Send(doneResponseText, strlen(doneResponseText));
-        
-        _embeddedIOServiceCollection.PwmService->InitPin(32, Out, 1000);
-        _embeddedIOServiceCollection.DigitalService->InitPin(33, Out);
-        _embeddedIOServiceCollection.DigitalService->InitPin(34, Out);
-        ledInterval = _embeddedIOServiceCollection.TimerService->GetTicksPerSecond();
-        ledPWMInterval = 20001;
-        ledTask = new Task([](){
-            _embeddedIOServiceCollection.DigitalService->WritePin(33, !_embeddedIOServiceCollection.DigitalService->ReadPin(33));
-        });
-        ledPWMTask = new Task([](){
-            for (uint8_t i = 0; i < 3; i++)
-            {
-                if (m[i] == 0) // Increasing
-                {
-                    d[i]++;
-                    if (d[i] == DUTY_MAX)
-                    {
-                        m[i] = 1;
-                    }
-                }
-                else // Decreasing
-                {
-                    d[i]--;
-                    if (d[i] == DUTY_MIN)
-                    {
-                        m[i] = 0;
-                    }
-                }
-                PwmValue value = { 1/100000.0f, d[i] / (100 * 100000.0f) };
-
-                _embeddedIOServiceCollection.PwmService->WritePin(i+32, value);
-            }
-        });
-        _embeddedIOServiceCollection.TimerService->ScheduleTask(ledTask, _embeddedIOServiceCollection.TimerService->GetTick()-1000);
-        while(ledTask->Scheduled);
-        _embeddedIOServiceCollection.TimerService->ScheduleTask(ledPWMTask, ledTask->ExecutedTick+ledPWMInterval);
 
 		size_t configSize = 0;
         const char responseText3[24] = "Initializing EngineMain";
@@ -208,12 +170,7 @@ extern "C"
         loopTime = _variableMap->GenerateValue(250);
     }
     void Loop() 
-    {
-        if(!ledTask->Scheduled)
-            _embeddedIOServiceCollection.TimerService->ScheduleTask(ledTask, ledTask->ScheduledTick + ledInterval);
-        if(!ledPWMTask->Scheduled)
-            _embeddedIOServiceCollection.TimerService->ScheduleTask(ledPWMTask, ledPWMTask->ScheduledTick + ledPWMInterval);
-            
+    {            
         const tick_t now = _embeddedIOServiceCollection.TimerService->GetTick();
         loopTime->Set((float)(now-prev) / _embeddedIOServiceCollection.TimerService->GetTicksPerSecond());
         prev = now;
