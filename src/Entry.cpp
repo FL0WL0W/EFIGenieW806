@@ -1,12 +1,12 @@
 #include "EFIGenieMain.h"
 #include "EmbeddedIOServiceCollection.h"
-#include "TimerService_W806.h"
+#include "TimerService_W80x.h"
 #include "CommunicationHandler_Prefix.h"
-#include "CommunicationService_W806UART.h"
-#include "AnalogService_W806.h"
-#include "DigitalService_W806.h"
-#include "PwmService_W806.h"
-#include "DigitalService_W806.h"
+#include "CommunicationService_W80xUART.h"
+#include "AnalogService_W80x.h"
+#include "DigitalService_W80x.h"
+#include "PwmService_W80x.h"
+#include "DigitalService_W80x.h"
 #include "CommunicationHandlers/CommunicationHandler_GetVariable.h"
 #include "Variable.h"
 #include "Config.h"
@@ -24,7 +24,7 @@ extern "C"
 {
     EmbeddedIOServiceCollection _embeddedIOServiceCollection;
     EFIGenieMain *_engineMain = 0;
-    CommunicationService_W806UART *_uartService;
+    CommunicationService_W80xUART *_uartService;
     CommunicationHandler_Prefix *_prefixHandler;
     CommunicationHandler_GetVariable *_getVariableHandler;
     GeneratorMap<Variable> *_variableMap;
@@ -38,21 +38,21 @@ extern "C"
     void Setup() 
     {
         _variableMap = new GeneratorMap<Variable>();
-        _uartService = CommunicationService_W806UART::Create(0, 1024, 1024, 115200, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
+        _uartService = CommunicationService_W80xUART::Create(0, 1024, 1024, 115200, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
         _uartService->RegisterHandler(_prefixHandler = new CommunicationHandler_Prefix());
 
         const char responseText1[32] = "Initializing EmbeddedIOServices";
         _uartService->Send(responseText1, strlen(responseText1));
-        _embeddedIOServiceCollection.DigitalService = new DigitalService_W806();
+        _embeddedIOServiceCollection.DigitalService = new DigitalService_W80x();
         // _embeddedIOServiceCollection.DigitalService->InitPin(0, In);
         // _embeddedIOServiceCollection.DigitalService->InitPin(34, Out);
         // _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
         // _embeddedIOServiceCollection.DigitalService->AttachInterrupt(0, [](){
         //     _embeddedIOServiceCollection.DigitalService->WritePin(34, _embeddedIOServiceCollection.DigitalService->ReadPin(0));
         // });
-        _embeddedIOServiceCollection.AnalogService = new AnalogService_W806();
-        _embeddedIOServiceCollection.TimerService = new TimerService_W806(1,0);
-        _embeddedIOServiceCollection.PwmService = new PwmService_W806();
+        _embeddedIOServiceCollection.AnalogService = new AnalogService_W80x();
+        _embeddedIOServiceCollection.TimerService = new TimerService_W80x(1,0);
+        _embeddedIOServiceCollection.PwmService = new PwmService_W80x();
         _uartService->Send(doneResponseText, strlen(doneResponseText));
 
 		size_t configSize = 0;
