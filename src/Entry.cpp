@@ -39,7 +39,7 @@ extern "C"
     {
         _variableMap = new GeneratorMap<Variable>();
         _uartService = CommunicationService_W80xUART::Create(0, 1024, 1024, 115200, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
-        _uartService->RegisterHandler(_prefixHandler = new CommunicationHandler_Prefix());
+        _uartService->RegisterReceiveCallBack([](communication_send_callback_t send, void *data, size_t length){ return _prefixHandler->Receive(send, data, length);});
 
         const char responseText1[32] = "Initializing EmbeddedIOServices";
         _uartService->Send(responseText1, strlen(responseText1));
@@ -63,8 +63,8 @@ extern "C"
         _uartService->Send((uint8_t*)doneResponseText, strlen(doneResponseText));
         
         _getVariableHandler = new CommunicationHandler_GetVariable(_variableMap);
-        _prefixHandler->RegisterHandler(_getVariableHandler, "g", 1);
-        _prefixHandler->RegisterReceiveCallBack(new communication_receive_callback_t([](communication_send_callback_t send, void *data, size_t length)
+        _prefixHandler->RegisterReceiveCallBack([](communication_send_callback_t send, void *data, size_t length){ return _getVariableHandler->Receive(send, data, length);}, "g", 1);
+        _prefixHandler->RegisterReceiveCallBack([](communication_send_callback_t send, void *data, size_t length)
         { 
             const size_t minDataSize = sizeof(void *) + sizeof(size_t);
             if(length < minDataSize)
@@ -75,8 +75,8 @@ extern "C"
             send(readData, readDataLength);
 
             return minDataSize;
-        }), "r", 1);
-        _prefixHandler->RegisterReceiveCallBack(new communication_receive_callback_t([](communication_send_callback_t send, void *data, size_t length)
+        }, "r", 1);
+        _prefixHandler->RegisterReceiveCallBack([](communication_send_callback_t send, void *data, size_t length)
         { 
             const size_t minDataSize = sizeof(void *) + sizeof(size_t);
             if(length < minDataSize)
@@ -102,8 +102,8 @@ extern "C"
             send(ack, sizeof(ack));
 
             return minDataSize + writeDataLength;
-        }), "w", 1);
-        _prefixHandler->RegisterReceiveCallBack(new communication_receive_callback_t([](communication_send_callback_t send, void *data, size_t length)
+        }, "w", 1);
+        _prefixHandler->RegisterReceiveCallBack([](communication_send_callback_t send, void *data, size_t length)
         { 
             if(_engineMain != 0)
             {
@@ -119,8 +119,8 @@ extern "C"
                 send((uint8_t*)responseText, strlen(responseText));
             }
             return static_cast<size_t>(0);
-        }), "q", 1, false);
-        _prefixHandler->RegisterReceiveCallBack(new communication_receive_callback_t([](communication_send_callback_t send, void *data, size_t length)
+        }, "q", 1, false);
+        _prefixHandler->RegisterReceiveCallBack([](communication_send_callback_t send, void *data, size_t length)
         { 
             if(_engineMain == 0)
             {
@@ -142,8 +142,8 @@ extern "C"
                 send((uint8_t*)responseText, strlen(responseText));
             }
             return static_cast<size_t>(0);
-        }), "s", 1, false);
-        _prefixHandler->RegisterReceiveCallBack(new communication_receive_callback_t([](communication_send_callback_t send, void *data, size_t length)
+        }, "s", 1, false);
+        _prefixHandler->RegisterReceiveCallBack([](communication_send_callback_t send, void *data, size_t length)
         { 
             if(length < sizeof(uint32_t))//make sure there are enough bytes to process a request
                 return static_cast<size_t>(0);
@@ -152,14 +152,14 @@ extern "C"
             send(reinterpret_cast<const uint8_t *>(_metadata) + offset * 64, 64);
 
             return static_cast<size_t>(sizeof(uint32_t));//return number of bytes handled
-        }), "m", 1);
-        _prefixHandler->RegisterReceiveCallBack(new communication_receive_callback_t([](communication_send_callback_t send, void *data, size_t length)
+        }, "m", 1);
+        _prefixHandler->RegisterReceiveCallBack([](communication_send_callback_t send, void *data, size_t length)
         { 
             size_t configLocation[1] = { reinterpret_cast<size_t>(&_config) };
             send(configLocation, sizeof(configLocation));
             
             return static_cast<size_t>(0);
-        }), "c", 1, false);
+        }, "c", 1, false);
 
         const char responseText5[22] = "Setting Up EngineMain";
         _uartService->Send((uint8_t*)responseText5, strlen(responseText5));
