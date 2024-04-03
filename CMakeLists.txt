@@ -9,11 +9,11 @@ include_directories(wm-sdk-w806/include/arch/xt804)
 include_directories(wm-sdk-w806/include/arch/xt804/csi_core)
 include_directories(wm-sdk-w806/include/arch/xt804/csi_dsp)
 include_directories(wm-sdk-w806/include/driver)
-include_directories(${LIBRARIES}/EFIGenie/libs/EmbeddedIOServices/HardwareAbstractions/W80x/include)
+include_directories(${LIBRARIES}/EmbeddedIOServices/HardwareAbstractions/W80x/include)
 
 file(GLOB_RECURSE USER_CSOURCES src/*.c)
 file(GLOB_RECURSE USER_CPPSOURCES src/*.cpp)
-file(GLOB_RECURSE EmbeddedIOService_SOURCES ${LIBRARIES}/EFIGenie/libs/EmbeddedIOServices/HardwareAbstractions/W80x/src/*.cpp)
+file(GLOB_RECURSE EmbeddedIOService_SOURCES ${LIBRARIES}/EmbeddedIOServices/HardwareAbstractions/W80x/src/*.cpp)
 
 set(SOURCE_FILES 
         ${USER_CSOURCES} 

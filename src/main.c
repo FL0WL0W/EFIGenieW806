@@ -3,12 +3,6 @@
 
 #define RCC ((RCC_TypeDef *)RCC_BASE)
 
-//undefined function so defining it
-size_t write(int fd, const void *buf, size_t count)
-{
-    return -1;
-}
-
 int main(void)
 {
     RCC->CLK_EN &= ~0x3FFFFF;

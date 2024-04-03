@@ -4,3 +4,6 @@
 [submodule "wm-sdk-w806"]
 	path = wm-sdk-w806
 	url = https://github.com/IOsetting/wm-sdk-w806
+[submodule "libs/EmbeddedIOServices"]
+	path = libs/EmbeddedIOServices
+	url = https://github.com/FL0WL0W/EmbeddedIOServices
