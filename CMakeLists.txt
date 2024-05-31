@@ -17,6 +17,19 @@ project(w806_libc C)
 file(GLOB_RECURSE w806_libc_csrcs wm-sdk-w806/platform/arch/xt804/libc/*.c)
 add_library(w806_libc STATIC ${w806_libc_csrcs})
 
+#Fetch EFIGenie
+Set(FETCHCONTENT_QUIET FALSE)
+include(FetchContent)
+include(ExternalProject)
+
+FetchContent_Declare(
+    EFIGenie
+    GIT_REPOSITORY    https://github.com/FL0WL0W/EFIGenie
+    GIT_TAG           main
+    GIT_PROGRESS      TRUE
+)
+FetchContent_MakeAvailable(EFIGenie)
+
 project ( EFIGenieW806 C CXX ASM )
 
 set(LIBRARIES	libs)
@@ -34,7 +47,6 @@ set(SOURCE_FILES
         ${EmbeddedIOService_SOURCES})
 add_executable(firmware.elf ${SOURCE_FILES})
 
-add_subdirectory (${LIBRARIES}/EFIGenie)
 target_link_libraries(firmware.elf w806_bsp)
 target_link_libraries(firmware.elf w806_libc)
 target_link_libraries(firmware.elf w806_drivers)
