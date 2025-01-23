@@ -59,8 +59,8 @@ target_link_libraries(firmware.elf w806_libc)
 target_link_libraries(firmware.elf w806_drivers)
 target_link_libraries(firmware.elf EFIGenie)
 
-set(HEX_FILE ${PROJECT_SOURCE_DIR}/build/firmware.hex)
-set(BIN_FILE ${PROJECT_SOURCE_DIR}/build/firmware.bin)
+set(HEX_FILE ${CMAKE_BINARY_DIR}/firmware.hex)
+set(BIN_FILE ${CMAKE_BINARY_DIR}/firmware.bin)
 add_custom_command(TARGET firmware.elf POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} ARGS -O ihex $<TARGET_FILE:firmware.elf> ${HEX_FILE}
         COMMAND ${CMAKE_OBJCOPY} ARGS -O binary $<TARGET_FILE:firmware.elf> ${BIN_FILE}
