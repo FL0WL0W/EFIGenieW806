@@ -59,9 +59,9 @@ target_link_libraries(firmware.elf w806_libc)
 target_link_libraries(firmware.elf w806_drivers)
 target_link_libraries(firmware.elf EFIGenie)
 
-set(HEX_FILE ${CMAKE_BINARY_DIR}/firmware.hex)
 set(BIN_FILE ${CMAKE_BINARY_DIR}/firmware.bin)
 add_custom_command(TARGET firmware.elf POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY} ARGS -O ihex $<TARGET_FILE:firmware.elf> ${HEX_FILE}
+        COMMAND bash -c "gcc ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c -lpthread -o ${CMAKE_BINARY_DIR}/wm_tool"
         COMMAND ${CMAKE_OBJCOPY} ARGS -O binary $<TARGET_FILE:firmware.elf> ${BIN_FILE}
-        COMMENT "Building ${HEX_FILE} \nBuilding ${BIN_FILE}")
+        COMMAND bash -c "${CMAKE_BINARY_DIR}/wm_tool -b ${BIN_FILE} -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8002000 -nh 0 -un 0 -o ${CMAKE_BINARY_DIR}/firmware"
+        COMMENT "Building ${BIN_FILE} ${CMAKE_BINARY_DIR}/firmware.img")
