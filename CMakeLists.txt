@@ -37,6 +37,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(EFIGenie)
 
+set(TARGET		W806EFIGenie)
+
 project ( EFIGenieW806 C CXX ASM )
 
 set(LIBRARIES	libs)
@@ -52,16 +54,52 @@ set(SOURCE_FILES
         ${USER_CSOURCES} 
         ${USER_CPPSOURCES} 
         ${EmbeddedIOService_SOURCES})
-add_executable(firmware.elf ${SOURCE_FILES})
+add_executable(${TARGET}.elf ${SOURCE_FILES})
 
-target_link_libraries(firmware.elf w806_bsp)
-target_link_libraries(firmware.elf w806_libc)
-target_link_libraries(firmware.elf w806_drivers)
-target_link_libraries(firmware.elf EFIGenie)
+target_link_libraries(${TARGET}.elf w806_bsp)
+target_link_libraries(${TARGET}.elf w806_libc)
+target_link_libraries(${TARGET}.elf w806_drivers)
+target_link_libraries(${TARGET}.elf EFIGenie)
 
-set(BIN_FILE ${CMAKE_BINARY_DIR}/firmware.bin)
-add_custom_command(TARGET firmware.elf POST_BUILD
+# modify wm_tool so it prints download status on newlines since vscode buffers the output
+file(READ ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c FILE_CONTENTS)
+string(REPLACE "wm_tool_printf(\"0%% [\");" "wm_tool_printf(\"0%% -\\r\\n\");" FILE_CONTENTS "${FILE_CONTENTS}")
+string(REPLACE "wm_tool_printf(\"#\");" "wm_tool_printf(\"####\\r\\n\");" FILE_CONTENTS "${FILE_CONTENTS}")
+string(REPLACE "wm_tool_printf(\"] 100%%\\r\\n\");" "wm_tool_printf(\"100%%\\r\\n\");" FILE_CONTENTS "${FILE_CONTENTS}")
+file(WRITE ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c "${FILE_CONTENTS}")
+
+set(BIN_FILE ${CMAKE_BINARY_DIR}/${TARGET}.bin)
+add_custom_command(TARGET ${TARGET}.elf POST_BUILD
         COMMAND bash -c "gcc ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c -lpthread -o ${CMAKE_BINARY_DIR}/wm_tool"
-        COMMAND ${CMAKE_OBJCOPY} ARGS -O binary $<TARGET_FILE:firmware.elf> ${BIN_FILE}
-        COMMAND bash -c "${CMAKE_BINARY_DIR}/wm_tool -b ${BIN_FILE} -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8002000 -nh 0 -un 0 -o ${CMAKE_BINARY_DIR}/firmware"
-        COMMENT "Building ${BIN_FILE} ${CMAKE_BINARY_DIR}/firmware.img")
+        COMMAND ${CMAKE_OBJCOPY} ARGS -O binary $<TARGET_FILE:${TARGET}.elf> ${BIN_FILE}
+        COMMAND bash -c "${CMAKE_BINARY_DIR}/wm_tool -b ${BIN_FILE} -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8002000 -nh 0 -un 0 -o ${CMAKE_BINARY_DIR}/${TARGET}"
+        COMMENT "Building ${BIN_FILE} ${CMAKE_BINARY_DIR}/${TARGET}.img")
+
+set(UPLOAD_ADDRESS "http://192.168.4.1/upload/w806" CACHE STRING "web address to upload img to")
+
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/upload.success
+    COMMAND ${CMAKE_COMMAND} -E echo "Uploading to ${UPLOAD_ADDRESS}"
+    COMMAND bash -c "curl --data-binary @${CMAKE_BINARY_DIR}/${TARGET}.img http://192.168.4.1/upload/w806"
+    COMMENT "Uploading ${CMAKE_BINARY_DIR}/${TARGET}.img")
+
+add_custom_target(
+    upload
+    DEPENDS ${TARGET}.elf
+    DEPENDS ${TARGET}.elf ${CMAKE_BINARY_DIR}/upload.success
+)
+
+set(DL_PORT "ttyUSB0" CACHE STRING "port to flash firmware to")
+set(DL_BAUD "2000000" CACHE STRING "baud rate to flash device")
+
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/flashed.success
+    COMMAND ${CMAKE_COMMAND} -E echo "Flashing to ${DL_PORT} at ${DL_BAUD}"
+    COMMAND ${CMAKE_BINARY_DIR}/wm_tool -c ${DL_PORT} -rs at -ds @${DL_BAUD} -dl "${CMAKE_BINARY_DIR}/${TARGET}.img"
+    COMMENT "Flashing ${CMAKE_BINARY_DIR}/${TARGET}.img"
+    VERBATIM)
+
+add_custom_target(
+    flash
+    DEPENDS ${TARGET}.elf ${CMAKE_BINARY_DIR}/flashed.success
+)
