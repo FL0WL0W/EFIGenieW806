@@ -1,4 +1,4 @@
-#include "EFIGenieMain.h"
+#include "EngineMain.h"
 #include "EmbeddedIOServiceCollection.h"
 #include "TimerService_W80x.h"
 #include "CommunicationHandler_Prefix.h"
@@ -23,7 +23,7 @@ extern char _config;
 extern "C"
 {
     EmbeddedIOServiceCollection _embeddedIOServiceCollection;
-    EFIGenieMain *_engineMain = 0;
+    EngineMain *_engineMain = 0;
     CommunicationService_W80xUART *_uartService;
     CommunicationHandler_EFIGenie *_efiGenieHandler;
     GeneratorMap<Variable> *_variableMap;
@@ -58,7 +58,7 @@ extern "C"
         if(_engineMain == 0)
         {
             size_t configSize = 0;
-            _engineMain = new EFIGenieMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
+            _engineMain = new EngineMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
 
             _engineMain->Setup();
         }
@@ -76,7 +76,7 @@ extern "C"
         _embeddedIOServiceCollection.PwmService = new PwmService_W80x();
 
         size_t configSize = 0;
-        _engineMain = new EFIGenieMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
+        _engineMain = new EngineMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
 
         _efiGenieHandler = new CommunicationHandler_EFIGenie(_variableMap, write, quit, start, reinterpret_cast<const void*>(&_config));
         _uartService->RegisterReceiveCallBack([&](communication_send_callback_t send, const void *data, size_t length){ return _efiGenieHandler->Receive(send, data, length); });

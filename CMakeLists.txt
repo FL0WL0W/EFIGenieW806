@@ -10,7 +10,7 @@ FetchContent_Declare(
     GIT_PROGRESS      TRUE
 )
 FetchContent_Populate(wm-sdk-w806)
-
+ 
 # build libraries
 include_directories(${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/include)
 include_directories(${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/include/arch)
@@ -42,11 +42,11 @@ project ( EFIGenieW806 C CXX ASM )
 set(LIBRARIES	libs)
 
 include_directories(include)
-include_directories(${CMAKE_BINARY_DIR}/_deps/embeddedioservices-src/HardwareAbstractions/W80x/include)
+include_directories(libs/EmbeddedIOServices/HardwareAbstractions/W80x/include)
 
 file(GLOB_RECURSE USER_CSOURCES src/*.c)
 file(GLOB_RECURSE USER_CPPSOURCES src/*.cpp)
-file(GLOB_RECURSE EmbeddedIOService_SOURCES ${CMAKE_BINARY_DIR}/_deps/embeddedioservices-src/HardwareAbstractions/W80x/src/*.cpp)
+file(GLOB_RECURSE EmbeddedIOService_SOURCES libs/EmbeddedIOServices/HardwareAbstractions/W80x/src/*.cpp)
 
 set(SOURCE_FILES 
         ${USER_CSOURCES} 
