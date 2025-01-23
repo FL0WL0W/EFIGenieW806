@@ -5,7 +5,7 @@
             "name": "W806-Debug",
             "displayName": "W806-Debug",
             "description": "W806-Debug",
-            "generator": "Ninja",
+            "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build/W806-Debug",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "csky-abiv2-elf-gcc",
@@ -22,7 +22,7 @@
             "name": "W806-Release",
             "displayName": "W806-Release",
             "description": "W806-Release",
-            "generator": "Ninja",
+            "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build/W806-Release",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "csky-abiv2-elf-gcc",
