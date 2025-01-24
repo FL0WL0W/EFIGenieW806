@@ -28,12 +28,16 @@ project(w806_libc C)
 file(GLOB_RECURSE w806_libc_csrcs ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/platform/arch/xt804/libc/*.c)
 add_library(w806_libc STATIC ${w806_libc_csrcs})
 
+set(LIBRARIES_DIR	    ${CMAKE_SOURCE_DIR}/libs)
+
 #Fetch EFIGenie
 FetchContent_Declare(
     EFIGenie
     GIT_REPOSITORY    https://github.com/FL0WL0W/EFIGenie
     GIT_TAG           main
     GIT_PROGRESS      TRUE
+    GIT_SHALLOW       TRUE
+    SOURCE_DIR        ${LIBRARIES_DIR}/EFIGenie
 )
 FetchContent_MakeAvailable(EFIGenie)
 
@@ -96,7 +100,7 @@ set(DL_BAUD "2000000" CACHE STRING "baud rate to flash device")
 add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/flashed.success
     COMMAND ${CMAKE_COMMAND} -E echo "Flashing to ${DL_PORT} at ${DL_BAUD}"
-    COMMAND ${CMAKE_BINARY_DIR}/wm_tool -c ${DL_PORT} -rs rts -ds ${DL_BAUD} -dl "${CMAKE_BINARY_DIR}/${TARGET}.fls" -eo all
+    COMMAND ${CMAKE_BINARY_DIR}/wm_tool -c ${DL_PORT} -rs rts -ds ${DL_BAUD} -dl "${CMAKE_BINARY_DIR}/${TARGET}.fls"
     COMMENT "Flashing ${CMAKE_BINARY_DIR}/${TARGET}.fls"
     VERBATIM)
 
