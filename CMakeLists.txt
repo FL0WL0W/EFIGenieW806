@@ -70,18 +70,19 @@ file(WRITE ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c "${FIL
 
 set(BIN_FILE ${CMAKE_BINARY_DIR}/${TARGET}.bin)
 add_custom_command(TARGET ${TARGET}.elf POST_BUILD
-        COMMAND bash -c "gcc ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c -lpthread -o ${CMAKE_BINARY_DIR}/wm_tool"
+        COMMAND gcc ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c -lpthread -o "${CMAKE_BINARY_DIR}/wm_tool"
         COMMAND ${CMAKE_OBJCOPY} ARGS -O binary $<TARGET_FILE:${TARGET}.elf> ${BIN_FILE}
-        COMMAND bash -c "${CMAKE_BINARY_DIR}/wm_tool -b ${BIN_FILE} -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8002000 -nh 0 -un 0 -o ${CMAKE_BINARY_DIR}/${TARGET}"
-        COMMENT "Building ${BIN_FILE} ${CMAKE_BINARY_DIR}/${TARGET}.img")
+        COMMAND ${CMAKE_BINARY_DIR}/wm_tool -b ${BIN_FILE} -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8002000 -nh 0 -un 0 -o "${CMAKE_BINARY_DIR}/${TARGET}"
+        COMMAND cat "${CMAKE_BINARY_DIR}/${TARGET}.img" > "${CMAKE_BINARY_DIR}/${TARGET}.fls"
+        COMMENT "Building ${BIN_FILE} ${CMAKE_BINARY_DIR}/${TARGET}.fls")
 
 set(UPLOAD_ADDRESS "http://192.168.4.1/upload/w806" CACHE STRING "web address to upload img to")
 
 add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/upload.success
     COMMAND ${CMAKE_COMMAND} -E echo "Uploading to ${UPLOAD_ADDRESS}"
-    COMMAND bash -c "curl --data-binary @${CMAKE_BINARY_DIR}/${TARGET}.img http://192.168.4.1/upload/w806"
-    COMMENT "Uploading ${CMAKE_BINARY_DIR}/${TARGET}.img")
+    COMMAND bash -c "curl --data-binary @${CMAKE_BINARY_DIR}/${TARGET}.fls http://192.168.4.1/upload/w806"
+    COMMENT "Uploading ${CMAKE_BINARY_DIR}/${TARGET}.fls")
 
 add_custom_target(
     upload
@@ -95,8 +96,8 @@ set(DL_BAUD "2000000" CACHE STRING "baud rate to flash device")
 add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/flashed.success
     COMMAND ${CMAKE_COMMAND} -E echo "Flashing to ${DL_PORT} at ${DL_BAUD}"
-    COMMAND ${CMAKE_BINARY_DIR}/wm_tool -c ${DL_PORT} -rs at -ds @${DL_BAUD} -dl "${CMAKE_BINARY_DIR}/${TARGET}.img"
-    COMMENT "Flashing ${CMAKE_BINARY_DIR}/${TARGET}.img"
+    COMMAND ${CMAKE_BINARY_DIR}/wm_tool -c ${DL_PORT} -rs rts -ds ${DL_BAUD} -dl "${CMAKE_BINARY_DIR}/${TARGET}.fls" -eo all
+    COMMENT "Flashing ${CMAKE_BINARY_DIR}/${TARGET}.fls"
     VERBATIM)
 
 add_custom_target(
