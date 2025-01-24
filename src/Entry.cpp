@@ -12,6 +12,7 @@
 #include "Config.h"
 #include "wm_internal_flash.h"
 #include "CRC.h"
+#include "Entry.h"
 
 using namespace EFIGenie;
 using namespace EmbeddedIOServices;
@@ -22,10 +23,11 @@ extern char _config;
 
 extern "C"
 {
-    EmbeddedIOServiceCollection _embeddedIOServiceCollection;
+    EmbeddedIOServiceCollection _embeddedIOServiceCollection = { 0, 0, 0, 0 };
     EngineMain *_engineMain = 0;
-    CommunicationService_W80xUART *_uartService;
-    CommunicationHandler_EFIGenie *_efiGenieHandler;
+    CommunicationService_W80xUART *_uartService = 0;
+    CommunicationHandler_EFIGenie *_efiGenieHandler = 0;
+    communication_receive_callback_id_t _efiGenieHandlerCallbackID = 0;
     GeneratorMap<Variable> *_variableMap;
     tick_t prev;
     Variable *loopTime;
@@ -57,31 +59,41 @@ extern "C"
     bool start() {
         if(_engineMain == 0)
         {
-            size_t configSize = 0;
-            _engineMain = new EngineMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
-
-            _engineMain->Setup();
+            Setup(1);
         }
         return true;
     }
 
-    void Setup() 
+    void Setup(uint8_t startEngine) 
     {
-        _variableMap = new GeneratorMap<Variable>();
-        _uartService = CommunicationService_W80xUART::Create(0, 1024, 1024, 2000000, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
+        if(_uartService == 0)
+            _variableMap = new GeneratorMap<Variable>();
+        if(_uartService == 0)
+            _uartService = CommunicationService_W80xUART::Create(0, 1024, 1024, 1000000, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
 
-        _embeddedIOServiceCollection.DigitalService = new DigitalService_W80x();
-        _embeddedIOServiceCollection.AnalogService = new AnalogService_W80x();
-        _embeddedIOServiceCollection.TimerService = new TimerService_W80x(1,0);
-        _embeddedIOServiceCollection.PwmService = new PwmService_W80x();
+        if(_embeddedIOServiceCollection.DigitalService == 0)
+            _embeddedIOServiceCollection.DigitalService = new DigitalService_W80x();
+        if(_embeddedIOServiceCollection.AnalogService == 0)
+            _embeddedIOServiceCollection.AnalogService = new AnalogService_W80x();
+        if(_embeddedIOServiceCollection.TimerService == 0)
+            _embeddedIOServiceCollection.TimerService = new TimerService_W80x(1,0);
+        if(_embeddedIOServiceCollection.PwmService == 0)
+            _embeddedIOServiceCollection.PwmService = new PwmService_W80x();
 
         size_t configSize = 0;
-        _engineMain = new EngineMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
+        if(startEngine == 1)
+            _engineMain = new EngineMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
 
-        _efiGenieHandler = new CommunicationHandler_EFIGenie(_variableMap, write, quit, start, reinterpret_cast<const void*>(&_config));
-        _uartService->RegisterReceiveCallBack([&](communication_send_callback_t send, const void *data, size_t length){ return _efiGenieHandler->Receive(send, data, length); });
+        if(_efiGenieHandler != 0)
+        {
+            _uartService->UnRegisterReceiveCallBack(_efiGenieHandlerCallbackID);
+            delete _efiGenieHandler;
+        }
+        _efiGenieHandler = new CommunicationHandler_EFIGenie(_variableMap, write, quit, start, startEngine == 1? reinterpret_cast<const void*>(&_config) : 0);
+        _efiGenieHandlerCallbackID = _uartService->RegisterReceiveCallBack([&](communication_send_callback_t send, const void *data, size_t length){ return _efiGenieHandler->Receive(send, data, length); });
 
-        _engineMain->Setup();
+        if(_engineMain != 0)
+            _engineMain->Setup();
         loopTime = _variableMap->GenerateValue(250);
     }
     void Loop() 

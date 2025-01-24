@@ -1,7 +1,17 @@
+#include "stdint.h"
+
 #ifndef ENTRY_H
 #define ENTRY_H
 
-void Setup();
-void Loop();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    void Setup(uint8_t startEngine);
+    void Loop();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

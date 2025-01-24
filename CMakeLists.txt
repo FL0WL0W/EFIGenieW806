@@ -5,7 +5,7 @@ include(FetchContent)
 #Fetch wm-sdk-w806
 FetchContent_Declare(
     wm-sdk-w806
-    GIT_REPOSITORY    https://github.com/IOsetting/wm-sdk-w806
+    GIT_REPOSITORY    https://github.com/FL0WL0W/wm-sdk-w806
     GIT_TAG           main
     GIT_PROGRESS      TRUE
 )
