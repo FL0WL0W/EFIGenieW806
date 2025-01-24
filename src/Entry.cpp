@@ -68,7 +68,7 @@ extern "C"
     void Setup() 
     {
         _variableMap = new GeneratorMap<Variable>();
-        _uartService = CommunicationService_W80xUART::Create(0, 1024, 1024, 115200, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
+        _uartService = CommunicationService_W80xUART::Create(0, 1024, 1024, 2000000, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
 
         _embeddedIOServiceCollection.DigitalService = new DigitalService_W80x();
         _embeddedIOServiceCollection.AnalogService = new AnalogService_W80x();

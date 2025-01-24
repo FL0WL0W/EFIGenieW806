@@ -22,11 +22,11 @@
  ******************************************************************************/
 MEMORY
 {
-    I-SRAM : ORIGIN = 0x08002400 , LENGTH = 0xEDC00 /* I-SRAM  1MB */ 
+    I-SRAM : ORIGIN = 0x08002400 , LENGTH = 0xDDC00 /* I-SRAM  1MB */ 
     D-SRAM : ORIGIN = 0x20000100 , LENGTH = 0x47f00   /* D-SRAM  288KB */
     V-SRAM : ORIGIN = 0x20000000 , LENGTH = 0x100   /* off-chip SRAM 8MB */
 }
-_config = 0x080F0000;
+_config = 0x080E0000;
 
 __min_heap_size = 0;
 PROVIDE (__ram_end  = 0x20048000);
@@ -43,9 +43,8 @@ SECTIONS
 {
  .text : {
   . = ALIGN(0x4) ;
-  KEEP(*startup.o(.vectors))
+  *(.vectors)
   __stext = . ;
-  *startup.o(.text*)
   *(.text)
   *(.text*)
   *(.text.*)
@@ -76,11 +75,13 @@ SECTIONS
   *(.rodata*)
   *(.rodata.*)
   *(.rodata.str1.4)
+  __ctor_start__ = .;
   KEEP (*crtbegin.o(.ctors))
   KEEP (*crtbegin?.o(.ctors))
   KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
   KEEP (*(SORT(.ctors.*)))
   KEEP (*(.ctors))
+  __ctor_end__ = .;
   KEEP (*crtbegin.o(.dtors))
   KEEP (*crtbegin?.o(.dtors))
   KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
@@ -92,7 +93,7 @@ SECTIONS
  .vdata : {
      . = ALIGN(0x4) ;
       __vdata_start__ = . ;
-     KEEP(*startup.o(.vdata))
+     KEEP(*(.vdata))
      . = ALIGN(0x4) ;
       __vdata_end__ = .;
  } > REGION_VDATA
@@ -101,7 +102,6 @@ SECTIONS
   __sdata = . ;
   __data_start__ = . ;
   data_start = . ;
-  *(.interrupt)
   *(.got.plt)
   *(.got)
   *(.gnu.linkonce.r*)
