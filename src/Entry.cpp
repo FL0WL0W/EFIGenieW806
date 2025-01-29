@@ -107,7 +107,6 @@ extern "C"
         *loopTime = (float)(now-prev) / _embeddedIOServiceCollection.TimerService->GetTicksPerSecond();
         prev = now;
         _uartService->FlushReceive();
-        _uartService->FlushTransmit();
 
         if(_engineMain != 0)
             _engineMain->Loop();
