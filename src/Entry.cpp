@@ -40,7 +40,7 @@ extern "C"
         }
         else if(reinterpret_cast<size_t>(destination) >= 0x08002400 && reinterpret_cast<size_t>(destination) <= 0x08100000)
         {
-            const size_t constDataAddress = reinterpret_cast<size_t>(data); //have to do this because the sdk does not have parameter as const even though they do not modify the data
+            const size_t constDataAddress = reinterpret_cast<size_t>(data); //have to do this because the sdk has parameter as const even though they do not modify the data
             HAL_FLASH_Write(reinterpret_cast<uint32_t>(destination), reinterpret_cast<uint8_t *>(constDataAddress), length);
         }
 
@@ -66,7 +66,7 @@ extern "C"
 
     void Setup(uint8_t startEngine) 
     {
-        if(_uartService == 0)
+        if(_variableMap == 0)
             _variableMap = new GeneratorMap<Variable>();
         if(_uartService == 0)
             _uartService = CommunicationService_W80xUART::Create(0, 1024, 1024, 1000000, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
@@ -80,24 +80,29 @@ extern "C"
         if(_embeddedIOServiceCollection.PwmService == 0)
             _embeddedIOServiceCollection.PwmService = new PwmService_W80x();
 
-        size_t configSize = 0;
+        const size_t configSize = *reinterpret_cast<const uint32_t *>(&_config) + sizeof(uint32_t) + sizeof(uint32_t);
+        size_t configgedSize;
         if(startEngine == 1)
-            _engineMain = new EngineMain(&_config, configSize, &_embeddedIOServiceCollection, _variableMap);
+            _engineMain = new EngineMain(&_config, configgedSize, &_embeddedIOServiceCollection, _variableMap);
 
-        if(_efiGenieHandler != 0)
+        if(configSize != configgedSize)
         {
-            _uartService->UnRegisterReceiveCallBack(_efiGenieHandlerCallbackID);
-            delete _efiGenieHandler;
+            delete _engineMain;
+            _engineMain = 0;
         }
-        _efiGenieHandler = new CommunicationHandler_EFIGenie(_variableMap, write, quit, start, startEngine == 1? reinterpret_cast<const void*>(&_config) : 0);
-        _efiGenieHandlerCallbackID = _uartService->RegisterReceiveCallBack([&](communication_send_callback_t send, const void *data, size_t length){ return _efiGenieHandler->Receive(send, data, length); });
+
+        if(_efiGenieHandler == 0)
+        {
+            _efiGenieHandler = new CommunicationHandler_EFIGenie(_variableMap, write, quit, start, &_config);
+            _efiGenieHandlerCallbackID = _uartService->RegisterReceiveCallBack([&](communication_send_callback_t send, const void *data, size_t length){ return _efiGenieHandler->Receive(send, data, length); });
+        }
 
         if(_engineMain != 0)
             _engineMain->Setup();
         loopTime = _variableMap->GenerateValue(250);
     }
     void Loop() 
-    {            
+    {
         const tick_t now = _embeddedIOServiceCollection.TimerService->GetTick();
         *loopTime = (float)(now-prev) / _embeddedIOServiceCollection.TimerService->GetTicksPerSecond();
         prev = now;

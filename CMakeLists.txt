@@ -75,7 +75,7 @@ file(WRITE ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c "${FIL
 set(BIN_FILE ${CMAKE_BINARY_DIR}/${TARGET}.bin)
 add_custom_command(TARGET ${TARGET}.elf POST_BUILD
         COMMAND gcc ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/tools/W806/wm_tool.c -lpthread -o "${CMAKE_BINARY_DIR}/wm_tool"
-        COMMAND ${CMAKE_OBJCOPY} ARGS -O binary $<TARGET_FILE:${TARGET}.elf> ${BIN_FILE}
+        COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${TARGET}.elf> ${BIN_FILE}
         COMMAND ${CMAKE_BINARY_DIR}/wm_tool -b ${BIN_FILE} -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8002000 -nh 0 -un 0 -o "${CMAKE_BINARY_DIR}/${TARGET}"
         COMMAND cat "${CMAKE_BINARY_DIR}/${TARGET}.img" > "${CMAKE_BINARY_DIR}/${TARGET}.fls"
         COMMENT "Building ${BIN_FILE} ${CMAKE_BINARY_DIR}/${TARGET}.fls")
