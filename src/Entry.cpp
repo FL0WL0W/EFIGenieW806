@@ -19,7 +19,7 @@ using namespace EmbeddedIOServices;
 using namespace EmbeddedIOOperations;
 using namespace OperationArchitecture;
 
-extern char _config;
+extern uint32_t _config;
 
 extern "C"
 {
@@ -80,7 +80,7 @@ extern "C"
         if(_embeddedIOServiceCollection.PwmService == 0)
             _embeddedIOServiceCollection.PwmService = new PwmService_W80x();
 
-        const size_t configSize = *reinterpret_cast<const uint32_t *>(&_config) + sizeof(uint32_t) + sizeof(uint32_t);
+        const size_t configSize = _config + sizeof(uint32_t) + sizeof(uint32_t);
         size_t configgedSize;
         if(startEngine == 1)
             _engineMain = new EngineMain(&_config, configgedSize, &_embeddedIOServiceCollection, _variableMap);
