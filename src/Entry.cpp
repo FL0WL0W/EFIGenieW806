@@ -76,7 +76,7 @@ extern "C"
         if(_embeddedIOServiceCollection.AnalogService == 0)
             _embeddedIOServiceCollection.AnalogService = new AnalogService_W80x();
         if(_embeddedIOServiceCollection.TimerService == 0)
-            _embeddedIOServiceCollection.TimerService = new TimerService_W80x(1,0);
+            _embeddedIOServiceCollection.TimerService = new TimerService_W80x(1,0,1000000);
         if(_embeddedIOServiceCollection.PwmService == 0)
             _embeddedIOServiceCollection.PwmService = new PwmService_W80x();
 

@@ -1,4 +1,4 @@
-cmake_minimum_required ( VERSION 3.9 )
+cmake_minimum_required (VERSION 3.30[3.30])
 Set(FETCHCONTENT_QUIET FALSE)
 include(FetchContent)
 
@@ -9,7 +9,7 @@ FetchContent_Declare(
     GIT_TAG           main
     GIT_PROGRESS      TRUE
 )
-FetchContent_Populate(wm-sdk-w806)
+FetchContent_MakeAvailable(wm-sdk-w806)
  
 # build libraries
 include_directories(${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/include)
