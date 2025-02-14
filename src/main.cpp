@@ -1,18 +1,28 @@
-#include "EngineMain.h"
+/******************************************************************************
+** 
+ * \file        main.c
+ * \author      IOsetting | iosetting@outlook.com
+ * \date        
+ * \brief       Demo code of PWM in independent mode
+ * \note        This will drive 3 on-board LEDs to show fade effect
+ * \version     v0.1
+ * \ingroup     demo
+ * \remarks     test-board: HLK-W806-KIT-V1.0
+ *              PWM Frequency = 40MHz / Prescaler / (Period + 1)；
+                Duty Cycle(Edge Aligned)   = (Pulse + 1) / (Period + 1)
+                Duty Cycle(Center Aligned) = (2 * Pulse + 1) / (2 * (Period + 1))
+ *
+******************************************************************************/
+
+#include "wm_regs.h"
 #include "EmbeddedIOServiceCollection.h"
-#include "TimerService_W80x.h"
-#include "CommunicationHandler_Prefix.h"
+#include "EngineMain.h"
 #include "CommunicationService_W80xUART.h"
+#include "DigitalService_W80x.h"
 #include "AnalogService_W80x.h"
-#include "DigitalService_W80x.h"
+#include "TimerService_W80x.h"
 #include "PwmService_W80x.h"
-#include "DigitalService_W80x.h"
 #include "CommunicationHandlers/CommunicationHandler_EFIGenie.h"
-#include "Variable.h"
-#include "Config.h"
-#include "wm_internal_flash.h"
-#include "CRC.h"
-#include "Entry.h"
 
 using namespace EFIGenie;
 using namespace EmbeddedIOServices;
@@ -31,7 +41,8 @@ extern "C"
     GeneratorMap<Variable> *_variableMap;
     tick_t prev;
     Variable *loopTime;
-    
+
+    void Setup(uint8_t startEngine);
 
     bool write(void *destination, const void *data, size_t length) {
         if(reinterpret_cast<size_t>(destination) >= 0x20000100 && reinterpret_cast<size_t>(destination) <= 0x20048000)
@@ -110,5 +121,41 @@ extern "C"
 
         if(_engineMain != 0)
             _engineMain->Loop();
+    }
+
+
+    #define RCC ((RCC_TypeDef *)RCC_BASE)
+    uint8_t startEngine = 1;
+
+    int main(void)
+    {
+        RCC->CLK_EN &= ~0x3FFFFF;
+        RCC->BBP_CLK = 0x0F;
+        RCC->CLK_DIV = 0x83060302;
+
+        Setup(startEngine);
+
+        while (1)
+        {
+            Loop();
+        }
+    }
+
+    __attribute__((isr)) void Default_Handler(void)
+    {
+        startEngine = 0;
+        main();
+    }
+
+    void Error_Handler(void)
+    {
+        startEngine = 0;
+        main();
+    }
+
+    void assert_failed(uint8_t *file, uint32_t line)
+    {
+        startEngine = 0;
+        main();
     }
 }

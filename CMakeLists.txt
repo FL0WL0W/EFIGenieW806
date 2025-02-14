@@ -2,33 +2,34 @@ cmake_minimum_required (VERSION 3.30[3.30])
 Set(FETCHCONTENT_QUIET FALSE)
 include(FetchContent)
 
+set(LIBRARIES_DIR	    ${CMAKE_SOURCE_DIR}/libs)
+
 #Fetch wm-sdk-w806
 FetchContent_Declare(
     wm-sdk-w806
     GIT_REPOSITORY    https://github.com/FL0WL0W/wm-sdk-w806
     GIT_TAG           main
     GIT_PROGRESS      TRUE
+    SOURCE_DIR        ${LIBRARIES_DIR}/wm-sdk-w806
 )
 FetchContent_MakeAvailable(wm-sdk-w806)
- 
-# build libraries
-include_directories(${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/include)
-include_directories(${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/include/arch)
-include_directories(${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/include/arch/xt804)
-include_directories(${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/include/arch/xt804/csi_core)
-include_directories(${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/include/driver)
-project(w806_drivers C)
-file(GLOB_RECURSE w806_drivers_csrcs ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/platform/drivers/*.c)
-add_library(w806_drivers STATIC ${w806_drivers_csrcs})
-project(w806_bsp C)
-file(GLOB_RECURSE w806_bsp_csrcs ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/platform/arch/xt804/bsp/*.c)
-file(GLOB_RECURSE w806_bsp_asmsrcs ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/platform/arch/xt804/bsp/*.S)
-add_library(w806_bsp STATIC ${w806_bsp_csrcs} ${w806_bsp_asmsrcs})
-project(w806_libc C)
-file(GLOB_RECURSE w806_libc_csrcs ${CMAKE_BINARY_DIR}/_deps/wm-sdk-w806-src/platform/arch/xt804/libc/*.c)
-add_library(w806_libc STATIC ${w806_libc_csrcs})
 
-set(LIBRARIES_DIR	    ${CMAKE_SOURCE_DIR}/libs)
+# build wm-sdk-w806 libraries
+include_directories(${LIBRARIES_DIR}/wm-sdk-w806/include)
+include_directories(${LIBRARIES_DIR}/wm-sdk-w806/include/arch)
+include_directories(${LIBRARIES_DIR}/wm-sdk-w806/include/arch/xt804)
+include_directories(${LIBRARIES_DIR}/wm-sdk-w806/include/arch/xt804/csi_core)
+include_directories(${LIBRARIES_DIR}/wm-sdk-w806/include/driver)
+project(w806_bsp C ASM)
+file(GLOB_RECURSE w806_bsp_csrcs ${LIBRARIES_DIR}/wm-sdk-w806/platform/arch/xt804/bsp/*.c)
+file(GLOB_RECURSE w806_bsp_asmsrcs ${LIBRARIES_DIR}/wm-sdk-w806/platform/arch/xt804/bsp/*.S)
+add_library(w806_bsp STATIC ${w806_bsp_csrcs} ${w806_bsp_asmsrcs})
+project(w806_drivers C)
+file(GLOB_RECURSE w806_drivers_csrcs ${LIBRARIES_DIR}/wm-sdk-w806/platform/drivers/*.c)
+add_library(w806_drivers STATIC ${w806_drivers_csrcs})
+# project(w806_libc C)
+# file(GLOB_RECURSE w806_libc_csrcs ${LIBRARIES_DIR}/wm-sdk-w806/platform/arch/xt804/libc/*.c)
+# add_library(w806_libc STATIC ${w806_libc_csrcs})
 
 #Fetch EFIGenie
 FetchContent_Declare(
@@ -43,26 +44,25 @@ FetchContent_MakeAvailable(EFIGenie)
 
 set(TARGET		W806EFIGenie)
 
-project ( EFIGenieW806 C CXX ASM )
-
-set(LIBRARIES	libs)
+project(${TARGET} C CXX ASM)
 
 include_directories(include)
-include_directories(libs/EmbeddedIOServices/HardwareAbstractions/W80x/include)
+include_directories(${LIBRARIES_DIR}/EmbeddedIOServices/HardwareAbstractions/W80x/include)
+include_directories(${LIBRARIES_DIR}/EmbeddedIOServices/HardwareAbstractions/ATTiny427Expander/include)
 
 file(GLOB_RECURSE USER_CSOURCES src/*.c)
 file(GLOB_RECURSE USER_CPPSOURCES src/*.cpp)
-file(GLOB_RECURSE EmbeddedIOService_SOURCES libs/EmbeddedIOServices/HardwareAbstractions/W80x/src/*.cpp)
+file(GLOB_RECURSE EmbeddedIOServiceW80x_SOURCES ${LIBRARIES_DIR}/EmbeddedIOServices/HardwareAbstractions/W80x/src/*.cpp)
 
-set(SOURCE_FILES 
+set(SRCS 
         ${USER_CSOURCES} 
-        ${USER_CPPSOURCES} 
-        ${EmbeddedIOService_SOURCES})
-add_executable(${TARGET}.elf ${SOURCE_FILES})
+        ${USER_CPPSOURCES}
+        ${EmbeddedIOServiceW80x_SOURCES})
+add_executable(${TARGET}.elf ${SRCS})
 
 target_link_libraries(${TARGET}.elf w806_bsp)
-target_link_libraries(${TARGET}.elf w806_libc)
 target_link_libraries(${TARGET}.elf w806_drivers)
+# target_link_libraries(${TARGET}.elf w806_libc)
 target_link_libraries(${TARGET}.elf EFIGenie)
 
 # modify wm_tool so it prints download status on newlines since vscode buffers the output
@@ -106,5 +106,6 @@ add_custom_command(
 
 add_custom_target(
     flash
+    DEPENDS ${TARGET}.elf
     DEPENDS ${TARGET}.elf ${CMAKE_BINARY_DIR}/flashed.success
 )
