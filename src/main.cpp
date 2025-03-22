@@ -23,6 +23,7 @@
 #include "TimerService_W80x.h"
 #include "PwmService_W80x.h"
 #include "CommunicationHandlers/CommunicationHandler_EFIGenie.h"
+#include "libc_port.h"
 
 using namespace EFIGenie;
 using namespace EmbeddedIOServices;
@@ -44,7 +45,7 @@ extern "C"
 
     void Setup(uint8_t startEngine);
 
-    bool write(void *destination, const void *data, size_t length) {
+    bool efigenie_write(void *destination, const void *data, size_t length) {
         if(reinterpret_cast<size_t>(destination) >= 0x20000100 && reinterpret_cast<size_t>(destination) <= 0x20048000)
         {
             std::memcpy(destination, data, length);
@@ -58,7 +59,7 @@ extern "C"
         return true;
     }
 
-    bool quit() {
+    bool efigenie_quit() {
         if(_engineMain != 0)
         {
             delete _engineMain;
@@ -67,7 +68,7 @@ extern "C"
         return true;
     }
 
-    bool start() {
+    bool efigenie_start() {
         if(_engineMain == 0)
         {
             Setup(1);
@@ -80,7 +81,7 @@ extern "C"
         if(_variableMap == 0)
             _variableMap = new GeneratorMap<Variable>();
         if(_uartService == 0)
-            _uartService = CommunicationService_W80xUART::Create(0, 1024, 1024, 1000000, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
+            _uartService = CommunicationService_W80xUART::Create(0, 52, 51, 1024, 1024, 1000000, UART_WORDLENGTH_8B, UART_STOPBITS_1, UART_PARITY_NONE);
 
         if(_embeddedIOServiceCollection.DigitalService == 0)
             _embeddedIOServiceCollection.DigitalService = new DigitalService_W80x();
@@ -104,7 +105,7 @@ extern "C"
 
         if(_efiGenieHandler == 0)
         {
-            _efiGenieHandler = new CommunicationHandler_EFIGenie(_variableMap, write, quit, start, &_config);
+            _efiGenieHandler = new CommunicationHandler_EFIGenie(_variableMap, efigenie_write, efigenie_quit, efigenie_start, &_config);
             _efiGenieHandlerCallbackID = _uartService->RegisterReceiveCallBack([&](communication_send_callback_t send, const void *data, size_t length){ return _efiGenieHandler->Receive(send, data, length); });
         }
 
@@ -157,5 +158,15 @@ extern "C"
     {
         startEngine = 0;
         main();
+    }
+
+    int write(int fd, const void *buf, size_t count) {
+        if(fd == STDOUT_FILENO)
+        {
+            _uartService->Send(buf, count);
+            return 0;
+        }
+
+        return -1;
     }
 }
